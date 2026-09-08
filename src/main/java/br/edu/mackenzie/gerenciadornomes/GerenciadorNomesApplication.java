@@ -4,6 +4,11 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+// Import de Banco de Dados JDBC
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
+
 @SpringBootApplication
 public class GerenciadorNomesApplication implements CommandLineRunner {
 
@@ -13,7 +18,32 @@ public class GerenciadorNomesApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        GerenciadorNomes gerenciador = new GerenciadorNomesLista();
+
+        // Conexao com banco de dados
+        String url = "jdbc:h2:file:./data/banco_dados";
+        String usuario = "admin";
+        String senha = "admin";
+
+        try (Connection connection =
+                DriverManager.getConnection(url, usuario, senha);
+            Statement statement = connection.createStatement()) {
+
+            statement.execute("""
+                CREATE TABLE IF NOT EXISTS nomes (
+                    nome VARCHAR(256) NOT NULL UNIQUE
+                )
+                """);
+            
+            codigoAnterior(connection);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void codigoAnterior(Connection connection) { 
+        // alterado para nova implementação de banco de dados
+        GerenciadorNomes gerenciador = new GerenciadorNomesBD(connection);
 
         gerenciador.adicionar("Ana");
         gerenciador.adicionar("Bruno");
